@@ -1,0 +1,12 @@
+#
+# Global
+#
+**/.agitator
+**/.classpath
+**/.clover
+**/.project
+**/.settings
+**/bin
+**/target
+
+**.DS_Store
