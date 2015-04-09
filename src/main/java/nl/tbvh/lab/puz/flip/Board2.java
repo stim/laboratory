@@ -35,46 +35,18 @@ public class Board2 {
         throw new IllegalStateException(msg);
     }
 
-    protected int calcBoard(int coin, int x) {
+    protected int calcBoard(int coin, int ... xs) {
         if (coin == 0) {
             return 0;
         }
-        int board = 1 << x;
-        int y;
-        if (coin % 2 == 0) {
-            y = calcY_v3(coin, x);
-        } else {
-            y = calcY_v1(coin, x);
+        int flip = 0;
+        int board = 0;
+        for (int x : xs) {
+            flip = x ^ coin;
+            board |= 1 << x;
         }
-        // System.out.println("y: " + y);
-        board |= 1 << y;
+        board ^= 1 << flip;
         return board;
-    }
-
-    private int calcY_v3(int coin, int x) {
-        int y = x;
-        int block;
-        if (coin == 4 || coin == 12) {
-            block = 4;
-        } else {
-            block = 2;
-        }
-        // add or subtract coin, based on what x is
-        if (x / block % 2 == 0) {
-            y += coin;
-        } else {
-            y -= coin;
-        }
-        return (y + BOARD_MAX) % BOARD_MAX;
-    }
-
-    private int calcY_v1(int coin, int x) {
-        int y = BOARD_MAX - coin - x;
-        y = (y + BOARD_MAX) % BOARD_MAX;
-        if (y == x) {
-            y--;
-        }
-        return (y + BOARD_MAX) % BOARD_MAX;
     }
 
     @Override
@@ -139,14 +111,12 @@ public class Board2 {
 
     public static int decode(String string) {
         int x = string.indexOf("x");
-        if (x < 0) {
-            return 0;
+        int value = 0;
+        while (x >= 0) {
+            value ^= x;
+            x = string.indexOf("x", x + 1);
         }
-        int y = string.indexOf("x", x + 1);
-        if (y - x % 2 == 0) {
-            return y - x;
-        }
-        return BOARD_MAX - x - y;
+        return value;
     }
 
     public static Board2 createBoard(int i, int x) {
