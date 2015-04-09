@@ -11,8 +11,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 public class Board2Test {
-    public static Board2 createBoard(int i, int x) {
-        return Board2.createBoard(i, x);
+    public static Board2 createBoard(int i, int ... xs) {
+        return Board2.createBoard(i, xs);
     }
 
     @Test
@@ -20,18 +20,18 @@ public class Board2Test {
         Multimap<String, Board2> boards = HashMultimap.create();
         for (int x = 0; x < Board2.BOARD_MAX; x++) {
             for (int i = 0; i < Board2.BOARD_MAX; i++) {
-                System.out.println();
+                // System.out.println();
                 // System.out.println("coin: " + i + ", x: " + x);
                 Board2 board = createBoard(i, x);
                 if (boards.containsKey(board.encode()) && !boards.get(board.encode()).contains(board)) {
                     fail("Duplicate board:\n" + board + "\nalready had: \n" + boards.get(board.encode()));
                 }
                 boards.put(board.encode(), board);
-                System.out.println(board);
+                // System.out.println(board);
 
             }
         }
-        printMagixSquare(boards);
+        // printMagixSquare(boards);
     }
 
     private void printMagixSquare(Multimap<String, Board2> boards) {
@@ -51,18 +51,20 @@ public class Board2Test {
         for (int i = 1; i < Board2.BOARD_MAX; i++) {
             for (int x = 0; x < Board2.BOARD_MAX; x++) {
                 Board2 board = createBoard(i, x);
-                System.out.println(board);
+                // System.out.println(board);
                 assertEquals("coin: " + i + ", x: " + x, i, Board2.decode(board.encode()));
             }
         }
     }
 
     @Test
-    public void singleTest() {
-        int i = 2;
-        int x = 4;
-        Board2 board = createBoard(i, x);
-        // System.out.println("coin: " + i + ", x: " + x);
-        // System.out.println(board);
+    public void multiValueTest() {
+        int[] xs = new int[] {
+            3, 6, 8, 11
+        };
+        int coin = 13;
+        Board2 board = createBoard(coin, xs);
+        System.out.println(board);
+        assertEquals(coin, Board2.decode(board.encode()));
     }
 }

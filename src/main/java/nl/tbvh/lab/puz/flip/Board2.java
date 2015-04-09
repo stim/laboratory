@@ -1,5 +1,7 @@
 package nl.tbvh.lab.puz.flip;
 
+import java.util.Arrays;
+
 /**
  * Solution for: http://www.solipsys.co.uk/FlippingPuzzle/AnotherFlippingPuzzle.html
  */
@@ -8,22 +10,25 @@ public class Board2 {
     public static final int BOARD_MAX = BOARD_SIDE * BOARD_SIDE;
     public final int coin;
     public final int board;
-    private final int x;
+    private final int[] xs;
 
-    public Board2(int coin, int x) {
+    public Board2(int coin, int ... xs) {
         this.coin = coin;
-        this.x = x;
-        board = calcBoard(coin, x);
+        this.xs = xs;
+        board = calcBoard(coin, xs);
         if (board >= 1 << BOARD_MAX) {
             System.out.println(Integer.toBinaryString(board));
             System.out.println(Integer.toBinaryString(1 << BOARD_MAX));
             fail("Board out of bounds");
         }
-        if (board != 0 && (board & 1 << x) == 0) {
-            fail("Board does not cover x");
-        }
         int bits = Long.bitCount(board);
-        if (bits != 0 && bits != 2) {
+        if (bits == xs.length + 1) {
+            for (int x : xs) {
+                if (board != 0 && (board & 1 << x) == 0) {
+                    fail("Board does not cover flipped " + x);
+                }
+            }
+        } else if (bits != xs.length - 1) {
             fail("Incorrect nr. of tiles swapped.");
         }
     }
@@ -39,10 +44,10 @@ public class Board2 {
         if (coin == 0) {
             return 0;
         }
-        int flip = 0;
+        int flip = coin;
         int board = 0;
         for (int x : xs) {
-            flip = x ^ coin;
+            flip ^= x;
             board |= 1 << x;
         }
         board ^= 1 << flip;
@@ -64,7 +69,7 @@ public class Board2 {
                 str.append("\n");
             }
         }
-        str.append("coin: ").append(coin).append(", x: ").append(x);
+        str.append("coin: ").append(coin).append(", flipped: ").append(Arrays.toString(xs));
         str.append("\n");
         return str.toString();
     }
@@ -119,7 +124,7 @@ public class Board2 {
         return value;
     }
 
-    public static Board2 createBoard(int i, int x) {
-        return new Board2(i, x);
+    public static Board2 createBoard(int i, int ... xs) {
+        return new Board2(i, xs);
     }
 }
