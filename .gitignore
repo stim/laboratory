@@ -6,6 +6,7 @@
 **/.clover
 **/.project
 **/.settings
+**/.cache*
 **/bin
 **/target
 
