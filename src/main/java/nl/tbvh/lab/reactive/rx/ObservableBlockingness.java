@@ -1,5 +1,7 @@
 package nl.tbvh.lab.reactive.rx;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.Callable;
@@ -21,13 +23,19 @@ public class ObservableBlockingness {
     private static int msPerTicks = 100;
 
     private final Func1<Callback, Void> callback;
-    private Observable<Long> observable;
+    Observable<Long> observable;
 
     public ObservableBlockingness(Func1<Callback, Void> callback) {
         this.callback = callback;
     }
 
+    public ObservableBlockingness(Observable<Long> observable) {
+        callback = null;
+        this.observable = observable;
+    }
+
     public ObservableBlockingness startObserving() {
+        checkState(observable == null);
         observable = Observable.create(new Sleeper());
         return this;
     }
@@ -39,7 +47,8 @@ public class ObservableBlockingness {
     }
 
     /**
-     * Sleeps a short while to prevent race condition when other callbacks run in other threads.
+     * Sleeps a short while to prevent race condition when other callbacks run in other
+     * threads.
      */
     public ObservableBlockingness thenCallback() {
         sleep(1, "For callback, to prevent race condition.");
@@ -117,6 +126,9 @@ public class ObservableBlockingness {
         System.out.println(strDate + "Thread " + id + "> " + msg);
     }
 
+    /*
+     * Schedules a callback.
+     */
     public ObservableBlockingness deferCallback() {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         int ticks = 2;
