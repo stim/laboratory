@@ -2,7 +2,7 @@ package nl.tbvh.lab.reactive.rx;
 
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import nl.tbvh.lab.reactive.rx.ObservableBlockingness.Callback;
+import nl.tbvh.lab.reactive.rx.ObservableDsl.Callback;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -10,12 +10,10 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.mockito.InOrder;
 
-import rx.Observable;
 import rx.functions.Func1;
-import rx.functions.Func2;
 
 public class ObservableSubscribedOnTest {
-    ObservableBlockingness obs;
+    ObservableDsl obs;
     private Func1<Callback, Void> callback;
     private InOrder inOrder;
 
@@ -29,32 +27,51 @@ public class ObservableSubscribedOnTest {
         System.out.println();
         System.out.println("Now running: " + testName.getMethodName());
         callback = mock(Func1.class);
-        obs = new ObservableBlockingness(callback);
+        obs = new ObservableDsl(callback);
         inOrder = inOrder(callback);
     }
 
     @Test
+    public void zipOfTwoSubscribedOnSubscribedOn() {
+        ObservableDsl obsA = new ObservableDsl(callback)
+            .startObserving()
+            .withSubscribeOn();
+        ObservableDsl obsB = new ObservableDsl(callback)
+            .startObserving()
+            .withSubscribeOn();
+        ObservableDsl zipped = obsA.zippedWith(obsB);
+
+        zipped.withSubscribeOn()
+            .thenSubscribe()
+            .thenWait();
+    }
+
+    @Test
     public void zipOfTwoSubscribedOn() {
-        ObservableBlockingness obsA = new ObservableBlockingness(callback)
+        ObservableDsl obsA = new ObservableDsl(callback)
             .startObserving()
             .withSubscribeOn();
-        ObservableBlockingness obsB = new ObservableBlockingness(callback)
+        ObservableDsl obsB = new ObservableDsl(callback)
             .startObserving()
             .withSubscribeOn();
-        Observable<Long> zipped = Observable.zip(obsA.observable, obsB.observable, zip());
-        obs = new ObservableBlockingness(zipped);
+        ObservableDsl zipped = obsA.zippedWith(obsB);
 
-        obs.withSubscribeOn()
-            .thenSubscribe();
+        zipped
+            .thenSubscribe()
+            .thenWait();
     }
 
-    private Func2<Long, Long, Long> zip() {
-        return new Func2<Long, Long, Long>() {
+    @Test
+    public void zipOfTwo() {
+        ObservableDsl obsA = new ObservableDsl(callback)
+            .startObserving();
+        ObservableDsl obsB = new ObservableDsl(callback)
+            .startObserving();
+        ObservableDsl zipped = obsA.zippedWith(obsB);
 
-            @Override
-            public Long call(Long a, Long b) {
-                return a + b;
-            }
-        };
+        zipped.withSubscribeOn()
+            .thenSubscribe()
+            .thenWaitLong();
     }
+
 }

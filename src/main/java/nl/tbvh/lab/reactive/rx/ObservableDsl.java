@@ -12,35 +12,39 @@ import java.util.concurrent.TimeUnit;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Func1;
+import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 import rx.subjects.ReplaySubject;
 
-public class ObservableBlockingness {
+public class ObservableDsl {
+    private static int instanceCounter = 0;
+
     enum Callback {
-        COMPLETED, ERROR, ONNEXT, CALL, DEFERED
+        COMPLETED, ERROR, ONNEXT, CALL, DEFERED, ZIPPED
     }
 
     private static int msPerTicks = 100;
 
+    private final int id = instanceCounter++;
     private final Func1<Callback, Void> callback;
     Observable<Long> observable;
 
-    public ObservableBlockingness(Func1<Callback, Void> callback) {
+    public ObservableDsl(Func1<Callback, Void> callback) {
         this.callback = callback;
     }
 
-    public ObservableBlockingness(Observable<Long> observable) {
-        callback = null;
+    private ObservableDsl(Func1<Callback, Void> callback, Observable<Long> observable) {
+        this.callback = callback;
         this.observable = observable;
     }
 
-    public ObservableBlockingness startObserving() {
+    public ObservableDsl startObserving() {
         checkState(observable == null);
         observable = Observable.create(new Sleeper());
         return this;
     }
 
-    public ObservableBlockingness thenSubscribe() {
+    public ObservableDsl thenSubscribe() {
         observable
             .subscribe(new Spy());
         return this;
@@ -50,27 +54,40 @@ public class ObservableBlockingness {
      * Sleeps a short while to prevent race condition when other callbacks run in other
      * threads.
      */
-    public ObservableBlockingness thenCallback() {
+    public ObservableDsl thenCallback() {
         sleep(1, "For callback, to prevent race condition.");
         callBack(Callback.CALL);
         return this;
     }
 
-    public ObservableBlockingness thenWait() {
-        sleep(5, "Waiting..");
+    public ObservableDsl thenWait() {
+        return thenWait(5);
+    }
+
+    public ObservableDsl thenWaitLong() {
+        return thenWait(15);
+    }
+
+    public ObservableDsl thenWait(int ticks) {
+        sleep(ticks, "Waiting..");
         return this;
     }
 
-    public ObservableBlockingness withSubscribeOn() {
+    public ObservableDsl withSubscribeOn() {
         observable = observable.subscribeOn(Schedulers.newThread());
         return this;
     }
 
-    public ObservableBlockingness withReplaySubject() {
+    public ObservableDsl withReplaySubject() {
         final ReplaySubject<Long> subject = ReplaySubject.create();
         observable.subscribe(subject);
         observable = subject;
         return this;
+    }
+
+    public ObservableDsl zippedWith(ObservableDsl other) {
+        Observable<Long> zipped = Observable.zip(this.observable, other.observable, zip(callback));
+        return new ObservableDsl(callback, zipped);
     }
 
     private void callBack(Callback reason) {
@@ -96,7 +113,7 @@ public class ObservableBlockingness {
         }
     }
 
-    static class Sleeper implements Observable.OnSubscribe<Long> {
+    class Sleeper implements Observable.OnSubscribe<Long> {
 
         @Override
         public void call(Subscriber<? super Long> t1) {
@@ -107,7 +124,7 @@ public class ObservableBlockingness {
         }
     }
 
-    private static void sleep(int ticks, String msg) {
+    private void sleep(int ticks, String msg) {
         int ms = ticks * msPerTicks;
         try {
             println("Sleep " + ticks + " tick(s). " + msg);
@@ -118,18 +135,19 @@ public class ObservableBlockingness {
         }
     }
 
-    private static void println(String msg) {
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS ");
+    private void println(String msg) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
         Date now = new Date();
         String strDate = sdf.format(now);
-        long id = Thread.currentThread().getId();
-        System.out.println(strDate + "Thread " + id + "> " + msg);
+        long threadId = Thread.currentThread().getId();
+        String str = String.format("%s Id: %d Thread %2d> %s", strDate, id, threadId, msg);
+        System.out.println(str);
     }
 
     /*
      * Schedules a callback.
      */
-    public ObservableBlockingness deferCallback() {
+    public ObservableDsl deferCallback() {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         int ticks = 2;
         executor.schedule(new Callable<Void>() {
@@ -142,5 +160,16 @@ public class ObservableBlockingness {
         }, ticks * msPerTicks, TimeUnit.MILLISECONDS);
         println("Scheduled DEFERED in " + ticks + " tick(s)");
         return this;
+    }
+
+    private Func2<Long, Long, Long> zip(Func1<Callback, Void> callback) {
+        return new Func2<Long, Long, Long>() {
+
+            @Override
+            public Long call(Long a, Long b) {
+                callBack(Callback.ZIPPED);
+                return a + b;
+            }
+        };
     }
 }

@@ -2,7 +2,7 @@ package nl.tbvh.lab.reactive.rx;
 
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import nl.tbvh.lab.reactive.rx.ObservableBlockingness.Callback;
+import nl.tbvh.lab.reactive.rx.ObservableDsl.Callback;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -13,7 +13,7 @@ import org.mockito.InOrder;
 import rx.functions.Func1;
 
 public class ObservableBlockingnessTest {
-    ObservableBlockingness obs;
+    ObservableDsl obs;
     private Func1<Callback, Void> callback;
     private InOrder inOrder;
 
@@ -27,7 +27,7 @@ public class ObservableBlockingnessTest {
         System.out.println();
         System.out.println("Now running: " + testName.getMethodName());
         callback = mock(Func1.class);
-        obs = new ObservableBlockingness(callback);
+        obs = new ObservableDsl(callback);
         inOrder = inOrder(callback);
     }
 
