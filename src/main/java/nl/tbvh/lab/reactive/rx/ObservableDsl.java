@@ -86,7 +86,7 @@ public class ObservableDsl {
     }
 
     public ObservableDsl zippedWith(ObservableDsl other) {
-        Observable<Long> zipped = Observable.zip(this.observable, other.observable, zip(callback));
+        Observable<Long> zipped = Observable.zip(this.observable, other.observable, zipper());
         return new ObservableDsl(callback, zipped);
     }
 
@@ -127,7 +127,7 @@ public class ObservableDsl {
     private void sleep(int ticks, String msg) {
         int ms = ticks * msPerTicks;
         try {
-            println("Sleep " + ticks + " tick(s). " + msg);
+            println("Sleep " + ticks + " ticks. " + msg);
             Thread.sleep(ms);
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
@@ -162,7 +162,7 @@ public class ObservableDsl {
         return this;
     }
 
-    private Func2<Long, Long, Long> zip(Func1<Callback, Void> callback) {
+    private Func2<Long, Long, Long> zipper() {
         return new Func2<Long, Long, Long>() {
 
             @Override
