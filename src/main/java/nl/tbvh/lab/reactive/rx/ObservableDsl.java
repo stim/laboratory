@@ -20,7 +20,7 @@ public class ObservableDsl {
     private static int instanceCounter = 0;
 
     enum Callback {
-        COMPLETED, ERROR, ONNEXT, CALL, DEFERED, ZIPPED
+        CREATED, COMPLETED, ERROR, ONNEXT, CALL, DEFERED, ZIPPED
     }
 
     private static int msPerTicks = 100;
@@ -29,7 +29,7 @@ public class ObservableDsl {
     private final Func1<Callback, Void> callback;
     Observable<Long> observable;
 
-    public ObservableDsl(Func1<Callback, Void> callback) {
+    private ObservableDsl(Func1<Callback, Void> callback) {
         this.callback = callback;
     }
 
@@ -38,9 +38,15 @@ public class ObservableDsl {
         this.observable = observable;
     }
 
-    public ObservableDsl startObserving() {
+    public static ObservableDsl start(Func1<Callback, Void> callback) {
+        return new ObservableDsl(callback)
+            .startObserving();
+    }
+
+    private ObservableDsl startObserving() {
         checkState(observable == null);
         observable = Observable.create(new Sleeper());
+        callBack(Callback.CREATED);
         return this;
     }
 

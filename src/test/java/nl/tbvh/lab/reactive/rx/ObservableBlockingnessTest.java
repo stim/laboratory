@@ -13,7 +13,6 @@ import org.mockito.InOrder;
 import rx.functions.Func1;
 
 public class ObservableBlockingnessTest {
-    ObservableDsl obs;
     private Func1<Callback, Void> callback;
     private InOrder inOrder;
 
@@ -27,13 +26,12 @@ public class ObservableBlockingnessTest {
         System.out.println();
         System.out.println("Now running: " + testName.getMethodName());
         callback = mock(Func1.class);
-        obs = new ObservableDsl(callback);
         inOrder = inOrder(callback);
     }
 
     @Test
     public void subscribeShouldBlock() {
-        obs.startObserving()
+        ObservableDsl.start(callback)
             .thenSubscribe()
             .thenCallback();
 
@@ -44,7 +42,7 @@ public class ObservableBlockingnessTest {
 
     @Test
     public void subscribeOnShouldNotBlock() {
-        obs.startObserving()
+        ObservableDsl.start(callback)
             .withSubscribeOn()
             .thenSubscribe()
             .thenCallback()
@@ -57,7 +55,7 @@ public class ObservableBlockingnessTest {
 
     @Test
     public void subscribeWithReplaySubjectShouldBlock() {
-        obs.startObserving()
+        ObservableDsl.start(callback)
             .withReplaySubject()
             .thenSubscribe()
             .thenCallback();
@@ -69,7 +67,7 @@ public class ObservableBlockingnessTest {
 
     @Test
     public void subscribeWithReplaySubjectSubscribeOnShouldBlock() {
-        obs.startObserving()
+        ObservableDsl.start(callback)
             .withReplaySubject() // Blocking here
             .withSubscribeOn()
             .thenSubscribe()
@@ -82,7 +80,7 @@ public class ObservableBlockingnessTest {
 
     @Test
     public void withReplaySubjectIsBlocking() {
-        obs.startObserving()
+        ObservableDsl.start(callback)
             .deferCallback()
             .thenCallback()
             .withReplaySubject() // Blocking here
@@ -95,7 +93,7 @@ public class ObservableBlockingnessTest {
 
     @Test
     public void subscribeOnWithReplaySubjectShouldNotBlock() {
-        obs.startObserving()
+        ObservableDsl.start(callback)
             .withSubscribeOn()
             .withReplaySubject()
             .thenSubscribe()

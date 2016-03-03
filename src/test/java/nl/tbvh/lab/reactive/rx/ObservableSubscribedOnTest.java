@@ -27,17 +27,15 @@ public class ObservableSubscribedOnTest {
         System.out.println();
         System.out.println("Now running: " + testName.getMethodName());
         callback = mock(Func1.class);
-        obs = new ObservableDsl(callback);
+        obs = ObservableDsl.start(callback);
         inOrder = inOrder(callback);
     }
 
     @Test
     public void zipOfTwoSubscribedOnSubscribedOn() {
-        ObservableDsl obsA = new ObservableDsl(callback)
-            .startObserving()
+        ObservableDsl obsA = ObservableDsl.start(callback)
             .withSubscribeOn();
-        ObservableDsl obsB = new ObservableDsl(callback)
-            .startObserving()
+        ObservableDsl obsB = ObservableDsl.start(callback)
             .withSubscribeOn();
         ObservableDsl zipped = obsA.zippedWith(obsB);
 
@@ -48,11 +46,9 @@ public class ObservableSubscribedOnTest {
 
     @Test
     public void zipOfTwoSubscribedOn() {
-        ObservableDsl obsA = new ObservableDsl(callback)
-            .startObserving()
+        ObservableDsl obsA = ObservableDsl.start(callback)
             .withSubscribeOn();
-        ObservableDsl obsB = new ObservableDsl(callback)
-            .startObserving()
+        ObservableDsl obsB = ObservableDsl.start(callback)
             .withSubscribeOn();
         ObservableDsl zipped = obsA.zippedWith(obsB);
 
@@ -62,11 +58,32 @@ public class ObservableSubscribedOnTest {
     }
 
     @Test
+    public void zipOfOnlySecondSubscribedOn() {
+        ObservableDsl obsA = ObservableDsl.start(callback);
+        ObservableDsl obsB = ObservableDsl.start(callback)
+            .withSubscribeOn();
+        ObservableDsl zipped = obsA.zippedWith(obsB);
+
+        zipped
+            .thenSubscribe()
+            .thenWait();
+    }
+
+    @Test
+    public void zipOfOnlyFirstSubscribedOn() {
+        ObservableDsl obsA = ObservableDsl.start(callback)
+            .withSubscribeOn();
+        ObservableDsl obsB = ObservableDsl.start(callback);
+        ObservableDsl zipped = obsA.zippedWith(obsB);
+
+        zipped
+            .thenSubscribe();
+    }
+
+    @Test
     public void zipOfTwo() {
-        ObservableDsl obsA = new ObservableDsl(callback)
-            .startObserving();
-        ObservableDsl obsB = new ObservableDsl(callback)
-            .startObserving();
+        ObservableDsl obsA = ObservableDsl.start(callback);
+        ObservableDsl obsB = ObservableDsl.start(callback);
         ObservableDsl zipped = obsA.zippedWith(obsB);
 
         zipped.withSubscribeOn()
