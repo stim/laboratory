@@ -25,6 +25,7 @@ public class GenericTypeArumentsTest {
         System.out.println("genericTypeOfInterfaceIsStringAndInteger");
 
         print(c);
+
     }
 
     @Test
@@ -33,12 +34,13 @@ public class GenericTypeArumentsTest {
         System.out.println("genericTypeOfMethodIsIntegerAndString");
 
         print(c.getMethod("invertMap").getReturnType());
+        print((ParameterizedType) c.getMethod("invertMap").getGenericReturnType());
     }
 
     @Test
     public void genericTypeOfMethodUsingGuava2() throws NoSuchMethodException, SecurityException, NoSuchFieldException {
         TypeToken<?> typeToken = TypeToken.of(getClass().getDeclaredField("c").getGenericType())
-                .resolveType(Map.class.getTypeParameters()[0]);
+            .resolveType(Map.class.getTypeParameters()[0]);
 
         typeToken = TypeToken.of(StringToIntMap.class.getMethod("invertMap").getGenericReturnType());
         System.out.println(typeToken);
@@ -60,7 +62,7 @@ public class GenericTypeArumentsTest {
         print(typeToken.getRawType());
 
         TypeToken<?> resolvedType = TypeToken.of(StringToIntMap.class)
-                .resolveType(StringToIntMap.class.getMethod("invertMap").getGenericReturnType());
+            .resolveType(StringToIntMap.class.getMethod("invertMap").getGenericReturnType());
         System.out.println("ResolvedType " + resolvedType);
         Type type = resolvedType.getType();
         // print(type);
@@ -82,5 +84,13 @@ public class GenericTypeArumentsTest {
         } else {
             System.out.println("GenericSuperclass: " + Arrays.toString(genericSuperclass.getActualTypeArguments()));
         }
+    }
+
+    private void print(ParameterizedType p) throws NoSuchMethodException {
+        System.out.println("ParameterizedType: " + p);
+
+        Type rawType = p.getRawType();
+        print((Class<?>) rawType);
+
     }
 }
