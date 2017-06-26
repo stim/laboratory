@@ -1,6 +1,5 @@
 package nl.tbvh.lab.reactive.rx;
 
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import nl.tbvh.lab.reactive.rx.ObservableDsl.Callback;
 
@@ -27,8 +26,8 @@ public class ObservableSubscribedOnTest {
         System.out.println();
         System.out.println("Now running: " + testName.getMethodName());
         callback = mock(Func1.class);
-        obs = ObservableDsl.start(callback);
-        inOrder = inOrder(callback);
+        // obs = ObservableDsl.start(callback);
+        // inOrder = inOrder(callback);
     }
 
     @Test

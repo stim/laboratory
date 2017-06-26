@@ -57,8 +57,7 @@ public class ObservableDsl {
     }
 
     /**
-     * Sleeps a short while to prevent race condition when other callbacks run in other
-     * threads.
+     * Sleeps a short while to prevent race condition when other callbacks run in other threads.
      */
     public ObservableDsl thenCallback() {
         sleep(1, "For callback, to prevent race condition.");
@@ -92,7 +91,7 @@ public class ObservableDsl {
     }
 
     public ObservableDsl zippedWith(ObservableDsl other) {
-        Observable<Long> zipped = Observable.zip(this.observable, other.observable, zipper());
+        Observable<Long> zipped = Observable.zip(observable, other.observable, zipper());
         return new ObservableDsl(callback, zipped);
     }
 
@@ -146,7 +145,7 @@ public class ObservableDsl {
         Date now = new Date();
         String strDate = sdf.format(now);
         long threadId = Thread.currentThread().getId();
-        String str = String.format("%s Id: %d Thread %2d> %s", strDate, id, threadId, msg);
+        String str = String.format("%s Id: %2d Thread %2d> %s", strDate, id, threadId, msg);
         System.out.println(str);
     }
 
